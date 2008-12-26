@@ -13,7 +13,6 @@ loop(Q) ->
       loop(Q);
 
     {pop, Resp} ->
-      io:format("Pop Lock And Drop It"),
       case length(Q) of
         0 ->
           respond(Resp, "null"),
@@ -25,7 +24,6 @@ loop(Q) ->
       end;
 
     {push, Item, Resp} ->
-      %io:format("Pushed"),
       respond(Resp, "true"),
       loop(lists:append(Q, [Item]));
 
