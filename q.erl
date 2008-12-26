@@ -14,12 +14,19 @@ loop(Q) ->
 
     {pop, Resp} ->
       io:format("Pop Lock And Drop It"),
-      [Head | Tail] = Q,
-      respond(Resp, io_lib:format("~p~n", [Head])),
-      loop(Tail);
+      case length(Q) of
+        0 ->
+          respond(Resp, "null"),
+          loop(Q);
+        _ ->
+          [Head | Tail] = Q,
+          respond(Resp, io_lib:format("~p~n", [Head])),
+          loop(Tail)
+      end;
 
     {push, Item, Resp} ->
-      respond(Resp, io_lib:format("~p~n", [true])),
+      %io:format("Pushed"),
+      respond(Resp, "true"),
       loop(lists:append(Q, [Item]));
 
     _ ->
