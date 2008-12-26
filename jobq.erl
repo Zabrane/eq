@@ -1,26 +1,26 @@
 -module(jobq).
--export([loop/0]).
+-export([start/0, stop/0, handle_request/2]).
 
-loop() -> loop([]).
+start() ->
+  QPid = q:start(),
+  
+  Loop = fun (Req) -> apply(?MODULE, handle_request, [Req, QPid]) end,
+  mochiweb_http:start([
+      {loop, Loop},
+      {name, ?MODULE},
+      {ip, "127.0.0.1"},
+      {port, 9952}
+  ]).
 
-loop(Q) ->
-  io:format("Q: ~p~n", [Q]),
-  receive
-    {peek} ->
-      [Head, _] = Q,
-      io:format("Got: ~p~n", [Head]),
-      loop(Q);
+stop() ->
+  mochiweb_http:stop(?MODULE).
 
-    {pop} ->
-      [Head, Tail] = Q,
-      io:format("Got: ~p~n", [Head]),
-      loop(Tail);
+handle_request(Req, QPid) ->
+  Method = Req:get(method),
 
-    {push, Item} ->
-      io:format("Pushing: ~p~n", [Item]),
-      loop(lists:append(Q, [Item]));
-
-    _ ->
-      io:format("Other")
+  Resp = Req:ok({"text/plain", chunked}),
+  case Method of
+    'GET' ->
+      QPid ! {pop, Resp}
   end.
 
