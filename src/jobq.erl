@@ -9,7 +9,12 @@
   data = ""
 }).
 
+init() ->
+  code:add_patha("./src"),
+  code:add_patha("./src/mochiweb").
+
 start() ->
+  init(),
   QPid = q:start(),
   
   Loop = fun (Req) -> apply(?MODULE, handle_request, [Req, QPid]) end,
