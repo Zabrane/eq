@@ -19,7 +19,7 @@ loop(Q) ->
           loop(Q);
         _ ->
           [Head | Tail] = Q,
-          respond(Resp, io_lib:format("{\"data\": ~p}", [Head])),
+          respond(Resp, io_lib:format("{\"data\": ~s}", [Head])),
           loop(Tail)
       end;
 

@@ -14,7 +14,7 @@ describe "JobQ" do
   end
 
   describe "GETing" do
-    it "should recieve an item from the queue" do
+    it "should receive an item from the queue" do
       response = RestClient.get(URL)
       h = JSON.parse(response)
 
@@ -30,6 +30,35 @@ describe "JobQ" do
       h.should have_key("success")
       h["success"].should be_true
     end
+  end
+
+  it "should receive a simple item from the queue" do
+    # Clear the queue
+    RestClient.delete(URL)
+
+    # Add a new item
+    RestClient.post(URL, :data => "Hey, Boys".to_json)
+
+    # Get an item
+    response = RestClient.get(URL)
+    h = JSON.parse(response)
+
+    h["data"].should == "Hey, Boys"
+  end
+
+  it "should receive a complex item from the queue" do
+    # Clear the queue
+    RestClient.delete(URL)
+
+    # Add a new item
+    RestClient.post(URL, :data => {"complex" => "item"}.to_json)
+
+    # Get an item
+    response = RestClient.get(URL)
+    h = JSON.parse(response)
+
+    h["data"].should have_key("complex")
+    h["data"]["complex"].should == "item"
   end
 
   URL = "http://localhost:9952"
