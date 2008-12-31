@@ -15,17 +15,21 @@ loop(Q) ->
     {pop, Resp} ->
       case length(Q) of
         0 ->
-          respond(Resp, "null"),
+          respond(Resp, "{\"data\": null}"),
           loop(Q);
         _ ->
           [Head | Tail] = Q,
-          respond(Resp, io_lib:format("~p~n", [Head])),
+          respond(Resp, io_lib:format("{\"data\": ~p}", [Head])),
           loop(Tail)
       end;
 
     {push, Item, Resp} ->
-      respond(Resp, "true"),
+      respond(Resp, "{\"success\": true}"),
       loop(lists:append(Q, [Item]));
+
+    {clear, Resp} ->
+      respond(Resp, "{\"success\": true}"),
+      loop([]);
 
     _ ->
       loop(Q)

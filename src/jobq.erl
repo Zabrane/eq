@@ -6,9 +6,8 @@
 -export([start/0, stop/0, handle_request/2]).
 
 -record(params, {
-  val = ""
+  data = ""
 }).
-
 
 start() ->
   QPid = q:start(),
@@ -26,7 +25,7 @@ stop() ->
 
 handle_request(Req, QPid) ->
   Method = Req:get(method),
-  Resp = Req:ok({"text/plain", chunked}),
+  Resp = Req:ok({"application/json", chunked}),
 
   case Method of
     'GET' ->
@@ -34,15 +33,18 @@ handle_request(Req, QPid) ->
 
     'POST' ->
       Params = parse_doc_query(Req),
-      Val = Params#params.val,
-      QPid ! {push, Val, Resp}
+      Val = Params#params.data,
+      QPid ! {push, Val, Resp};
+
+    'DELETE' ->
+      QPid ! {clear, Resp}
   end.
 
 
 parse_doc_query(Req) ->
   lists:foldl(fun(Pair, Args) ->
     case Pair of
-      {"val", Val} ->
-        Args#params{val=Val}
+      {"data", Val} ->
+        Args#params{data=Val}
     end
   end, #params{}, Req:parse_post()).
