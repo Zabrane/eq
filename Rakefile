@@ -12,14 +12,12 @@ task :compile => ["compile:mochiweb", "compile:jobq"]
 namespace :compile do
   desc "Compile MochiWeb files"
   task :mochiweb do
-    f = File.join(File.dirname(__FILE__), 'src', 'mochiweb', '*.erl')
-    `erlc #{f}`
+    `cd #{File.join(File.dirname(__FILE__), 'src', 'mochiweb')} && erlc *.erl`
   end
 
   desc "Compile JobQ files"
   task :jobq do
-    f = File.join(File.dirname(__FILE__), 'src', '*.erl')
-    `erlc #{f}`
+    `cd #{File.join(File.dirname(__FILE__), 'src')} && erlc *.erl`
   end
 
   desc "Cleans all .beam and erl_crash.dump files"

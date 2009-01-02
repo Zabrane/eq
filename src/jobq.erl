@@ -5,8 +5,12 @@
 
 -export([start/0, stop/0, handle_request/2]).
 
--record(params, {
+-record(post_params, {
   data = ""
+}).
+
+-record(get_params, {
+  options = []
 }).
 
 init() ->
@@ -30,26 +34,38 @@ stop() ->
 
 handle_request(Req, QPid) ->
   Method = Req:get(method),
-  Resp = Req:ok({"application/json", chunked}),
+  Resp = Req:ok({"text/plain", chunked}),
 
   case Method of
     'GET' ->
-      QPid ! {pop, Resp};
+      Params = parse_get_params(Req),
+      Options = Params#get_params.options,
+      QPid ! {pop, Resp, Options};
 
     'POST' ->
-      Params = parse_doc_query(Req),
-      Val = Params#params.data,
-      QPid ! {push, Val, Resp};
+      Params = parse_post_params(Req),
+      Val = Params#post_params.data,
+      QPid ! {push, Resp, Val};
 
     'DELETE' ->
       QPid ! {clear, Resp}
   end.
 
 
-parse_doc_query(Req) ->
+parse_post_params(Req) ->
   lists:foldl(fun(Pair, Args) ->
     case Pair of
       {"data", Val} ->
-        Args#params{data=Val}
+        Args#post_params{data=Val}
     end
-  end, #params{}, Req:parse_post()).
+  end, #post_params{}, Req:parse_post()).
+
+parse_get_params(Req) ->
+  lists:foldl(fun(Pair, Args) ->
+    case Pair of
+      {"count", "true"} ->
+        Args#get_params{options=[count|Args#get_params.options]}
+    end
+  end, #get_params{}, Req:parse_qs()).
+
+

@@ -20,6 +20,21 @@ describe "JobQ" do
 
       h.should have_key("data")
     end
+
+    it "with param 'count=true' should also return the number of items in the queue" do
+      # Clear the queue
+      RestClient.delete(URL)
+
+      # Add a new item
+      RestClient.post(URL, :data => "Hey, Boys".to_json)
+
+      # Get an item
+      response = RestClient.get("#{URL}?count=true")
+      h = JSON.parse(response)
+
+      h.should have_key("count")
+      h["count"].should == 1
+    end
   end
 
   describe "DELETEing" do
