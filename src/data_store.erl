@@ -24,23 +24,24 @@ push(Data) ->
   mnesia:transaction(F).
 
 first_item() ->
-  [H|_] = do(qlc:q([X || X <- mnesia:table(qrow)])),
-  H.
+  case do(qlc:q([X || X <- mnesia:table(qrow)])) of
+    [H|_] -> H;
+    _     -> {}
+  end.
   
 peek() ->
-  Item = first_item(),
-  {qrow, _, Data} = Item,
-  Data.
+  case first_item() of
+    {qrow, _, Data} -> Data;
+    _               -> nothing
+  end.
 
 pop() ->
-  Item = first_item(),
-  F = fun() ->
-        {qrow, Id, Data} = Item,
-        mnesia:delete({qrow, Id}),
-        Data
-      end,
-  {atomic, Data} = mnesia:transaction(F),
-  Data.
+  case first_item() of
+    {qrow, Id, Data} -> 
+      mnesia:transaction(fun() -> mnesia:delete({qrow, Id}) end),
+      Data;
+    _ -> nothing
+  end.
   
 
 clear() ->
